@@ -1,8 +1,4 @@
 #!/usr/bin/env bash
-
-exit on error
-set -o errexit
-
+set -e
 pip install -r backend/requirements.txt
-
-python -c "import nltk; nltk.download('punkt'); nltk.download('averaged_perceptron_tagger')"
+python -c "import nltk; nltk.download('punkt', quiet=True); nltk.download('averaged_perceptron_tagger', quiet=True)"
