@@ -6,45 +6,103 @@
     <title>Automated Resume Relevance Check</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        .loader { border: 5px solid #f3f3f3; border-top: 5px solid #3498db; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin: 20px auto; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .logo-placeholder {
+            width: 40px;
+            height: 40px;
+            background-color: #4A5568;
+            border-radius: 50%;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 12px;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.5);
+            animation: fadeIn 0.3s;
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 10% auto;
+            padding: 24px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 700px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            animation: slideIn 0.3s;
+        }
+        .close-btn {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close-btn:hover, .close-btn:focus {
+            color: #000;
+        }
+        @keyframes fadeIn { from {opacity: 0;} to {opacity: 1;} }
+        @keyframes slideIn { from {transform: translateY(-50px);} to {transform: translateY(0);} }
+        .highlight-new {
+            animation: highlight 2s ease-out;
+        }
+        @keyframes highlight {
+            0% { background-color: #a7f3d0; }
+            100% { background-color: transparent; }
+        }
     </style>
 </head>
 <body class="bg-gray-100 font-sans">
+    <div id="detailsModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2 class="text-3xl font-bold text-gray-800 mb-4">Evaluation Details</h2>
+            <div id="modalBody"></div>
+        </div>
+    </div>
 
-    <div class="container mx-auto p-8">
-        <header class="text-center mb-10 flex items-center justify-center gap-4">
-            <svg class="w-12 h-12 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-            <div>
-                <h1 class="text-4xl font-bold text-gray-800">Automated Resume Relevance Check</h1>
-                <p class="text-gray-600">The intelligent tool for modern recruitment.</p>
-            </div>
+    <div class="container mx-auto p-4 md:p-8">
+        <header class="text-center mb-8 bg-white p-6 rounded-xl shadow-md">
+            <h1 class="text-4xl font-extrabold text-gray-800 flex items-center justify-center">
+                <span class="logo-placeholder"></span>
+                Automated Resume Relevance Check
+            </h1>
+            <p class="text-gray-500 mt-2">The intelligent tool for modern recruitment.</p>
         </header>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
-            <div class="bg-white p-6 rounded-lg shadow-lg transform hover:scale-105 transition-transform duration-300">
-                <h2 class="text-2xl font-semibold mb-4">Upload Files</h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+            <div class="bg-white p-6 rounded-xl shadow-lg">
+                <h2 class="text-2xl font-semibold mb-4 text-gray-700">Upload Files</h2>
                 <div class="mb-4">
-                    <label for="resume" class="block text-gray-700 font-medium mb-2">Upload Resume (.pdf, .docx)</label>
-                    <input type="file" id="resume" accept=".pdf,.docx" class="w-full p-2 border border-gray-300 rounded-lg">
+                    <label for="resume" class="block text-gray-600 font-medium mb-2">Upload Resume (.pdf, .docx)</label>
+                    <input type="file" id="resume" accept=".pdf,.docx" class="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-500">
                 </div>
-                <div class="mb-4">
-                    <label for="job_description" class="block text-gray-700 font-medium mb-2">Upload Job Description (.pdf, .docx)</label>
-                    <input type="file" id="job_description" accept=".pdf,.docx" class="w-full p-2 border border-gray-300 rounded-lg">
+                <div class="mb-6">
+                    <label for="job_description" class="block text-gray-600 font-medium mb-2">Upload Job Description (.pdf, .docx)</label>
+                    <input type="file" id="job_description" accept=".pdf,.docx" class="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-500">
                 </div>
-                <button id="analyzeBtn" class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-300">Analyze</button>
+                <button id="analyzeBtn" class="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-blue-700 transition duration-300 shadow-md transform hover:scale-105">Analyze</button>
             </div>
-            <div id="results-container" class="bg-white p-6 rounded-lg shadow-lg">
-                <h2 class="text-2xl font-semibold mb-4">Analysis Results</h2>
+
+            <div class="bg-white p-6 rounded-xl shadow-lg">
+                <h2 class="text-2xl font-semibold mb-4 text-gray-700">Analysis Results</h2>
                 <div id="results" class="text-gray-700">
-                    <p>Analysis results will appear here. Click 'View Details' on an item in the history to review it.</p>
+                    <p class="text-gray-500">Please upload both a resume and a job description to see the analysis.</p>
                 </div>
             </div>
         </div>
-        
-        <div class="bg-white p-6 rounded-lg shadow-lg">
-            <div class="flex flex-wrap justify-between items-center mb-4 gap-4">
-                <h2 class="text-2xl font-semibold">Evaluation History</h2>
-                <div class="flex items-center space-x-4">
+
+        <div class="bg-white p-6 rounded-xl shadow-lg">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-semibold text-gray-700">Evaluation History</h2>
+                <div class="flex items-center gap-2">
                     <input type="text" id="searchInput" placeholder="Search by filename..." class="p-2 border border-gray-300 rounded-lg">
                     <select id="verdictFilter" class="p-2 border border-gray-300 rounded-lg">
                         <option value="">All Verdicts</option>
@@ -52,22 +110,23 @@
                         <option value="Medium">Medium</option>
                         <option value="Low">Low</option>
                     </select>
-                    <button id="clearHistoryBtn" class="bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition duration-300">Clear History</button>
+                    <button id="clearHistoryBtn" class="bg-red-500 text-white py-2 px-4 rounded-lg font-semibold hover:bg-red-600 transition duration-300">Clear History</button>
                 </div>
             </div>
-            <div id="history-table-container" class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
+            <div class="overflow-x-auto">
+                <table class="min-w-full bg-white">
+                    <thead class="bg-gray-200">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Resume</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Job Desc.</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Score</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Verdict</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Analysis Type</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+                            <th class="py-2 px-4 text-left text-gray-600">RESUME</th>
+                            <th class="py-2 px-4 text-left text-gray-600">JOB DESC.</th>
+                            <th class="py-2 px-4 text-left text-gray-600">SCORE</th>
+                            <th class="py-2 px-4 text-left text-gray-600">VERDICT</th>
+                            <th class="py-2 px-4 text-left text-gray-600">ANALYSIS TYPE</th>
+                            <th class="py-2 px-4 text-left text-gray-600">ACTION</th>
                         </tr>
                     </thead>
-                    <tbody id="history-body" class="bg-white divide-y divide-gray-200"></tbody>
+                    <tbody id="historyTableBody">
+                    </tbody>
                 </table>
             </div>
         </div>
@@ -75,137 +134,151 @@
 
     <script>
         const analyzeBtn = document.getElementById('analyzeBtn');
-        const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+        const resumeInput = document.getElementById('resume');
+        const jdInput = document.getElementById('job_description');
         const resultsDiv = document.getElementById('results');
-        const historyBody = document.getElementById('history-body');
+        const historyTableBody = document.getElementById('historyTableBody');
         const searchInput = document.getElementById('searchInput');
         const verdictFilter = document.getElementById('verdictFilter');
-        let evaluationHistoryCache = [];
+        const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+        const modal = document.getElementById('detailsModal');
+        const modalBody = document.getElementById('modalBody');
+        const closeBtn = document.querySelector('.close-btn');
+
+        let evaluations = [];
 
         async function fetchHistory() {
             const searchTerm = searchInput.value;
             const verdict = verdictFilter.value;
-            const url = `http://127.0.0.1:5000/evaluations?search=${encodeURIComponent(searchTerm)}&verdict=${encodeURIComponent(verdict)}`;
             try {
-                const response = await fetch(url);
-                if (!response.ok) throw new Error('Failed to load history');
-                evaluationHistoryCache = await response.json();
-                renderHistoryTable();
+                // CORRECTED: Use relative URL
+                const response = await fetch(`/api/evaluations?search=${searchTerm}&verdict=${verdict}`);
+                if (response.ok) {
+                    evaluations = await response.json();
+                    renderHistory();
+                } else {
+                    historyTableBody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-red-500">Could not connect to the server.</td></tr>';
+                }
             } catch (error) {
-                console.error("Failed to fetch history:", error);
-                historyBody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-red-500">Could not connect to the server.</td></tr>';
+                console.error('Fetch history error:', error);
+                historyTableBody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-red-500">Could not connect to the server.</td></tr>';
             }
         }
-
-        function renderHistoryTable() {
-            historyBody.innerHTML = '';
-            if (evaluationHistoryCache.length === 0) {
-                historyBody.innerHTML = '<tr><td colspan="6" class="text-center py-4">No matching records found.</td></tr>';
+        
+        function renderHistory() {
+            historyTableBody.innerHTML = '';
+            if (evaluations.length === 0) {
+                historyTableBody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-gray-500">No history found.</td></tr>';
                 return;
             }
-            evaluationHistoryCache.forEach((item, index) => {
-                let verdictColor = 'text-gray-500';
-                if (item.verdict === 'High') verdictColor = 'text-green-500';
-                else if (item.verdict === 'Medium') verdictColor = 'text-yellow-600';
-                else if (item.verdict === 'Low') verdictColor = 'text-red-500';
-
-                // FIX for the "undefined" bug
-                const analysisType = item.analysis_type || 'Local';
-                let analysisTypeColor = analysisType === 'Hybrid (Local + AI)' ? 'text-green-600' : 'text-orange-500';
-
+            evaluations.forEach((item, index) => {
+                const verdictClass = item.verdict === 'High' ? 'bg-green-100 text-green-800' : item.verdict === 'Medium' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800';
                 const row = document.createElement('tr');
+                row.className = 'border-b hover:bg-gray-50';
                 row.innerHTML = `
-                    <td class="px-6 py-4 whitespace-nowrap text-sm">${item.resume_filename}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm">${item.jd_filename}</td>
-                    <td class="px-6 py-4 whitespace-nowrap font-bold ${verdictColor}">${item.relevance_score}</td>
-                    <td class="px-6 py-4 whitespace-nowrap font-semibold ${verdictColor}">${item.verdict}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium ${analysisTypeColor}">${analysisType}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm">
-                        <button class="text-blue-600 hover:underline" onclick="showDetails(${index})">View Details</button>
-                    </td>
+                    <td class="py-2 px-4">${item.resume_filename}</td>
+                    <td class="py-2 px-4">${item.jd_filename}</td>
+                    <td class="py-2 px-4 font-bold">${item.relevance_score}</td>
+                    <td class="py-2 px-4"><span class="px-2 py-1 rounded-full text-xs font-semibold ${verdictClass}">${item.verdict}</span></td>
+                    <td class="py-2 px-4">${item.analysis_type}</td>
+                    <td class="py-2 px-4"><button class="view-details-btn bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-md hover:bg-blue-200" data-index="${index}">View Details</button></td>
                 `;
-                historyBody.appendChild(row);
+                historyTableBody.appendChild(row);
             });
         }
         
-        // NEW function to show details in the main panel
-        function showDetails(index) {
-            const data = evaluationHistoryCache[index];
-            if (!data) return;
-
-            let verdictColor = 'text-gray-700';
-            if (data.verdict === 'High') verdictColor = 'text-green-600';
-            else if (data.verdict === 'Medium') verdictColor = 'text-yellow-600';
-            else if (data.verdict === 'Low') verdictColor = 'text-red-600';
-            
-            const analysisType = data.analysis_type || 'Local';
-            let analysisTypeColor = analysisType === 'Hybrid (Local + AI)' ? 'text-green-600' : 'text-orange-500';
-            
-            // Ensure skills are parsed safely
-            const matchedSkills = JSON.parse(data.matched_skills || '[]');
-            const missingSkills = JSON.parse(data.missing_skills || '[]');
-
-            resultsDiv.innerHTML = `
-                <div class="space-y-3">
-                    <div><h4 class="font-semibold text-lg">Relevance Score: <span class="font-bold ${verdictColor}">${data.relevance_score}</span></h4></div>
-                    <div><h4 class="font-semibold text-lg">Verdict: <span class="font-semibold ${verdictColor}">${data.verdict}</span></h4></div>
-                    <div><h4 class="font-semibold text-lg">Analysis Type: <span class="font-medium ${analysisTypeColor}">${analysisType}</span></h4></div>
-                    <hr>
-                    <div><h4 class="font-semibold">Feedback:</h4><p class="text-sm">${data.feedback}</p></div>
-                    <div><h4 class="font-semibold">Matched Skills (${matchedSkills.length}):</h4><p class="text-sm text-green-700">${matchedSkills.join(', ') || 'None'}</p></div>
-                    <div><h4 class="font-semibold">Missing Skills (${missingSkills.length}):</h4><p class="text-sm text-red-700">${missingSkills.join(', ') || 'None'}</p></div>
-                </div>
-            `;
-        }
-
         analyzeBtn.addEventListener('click', async () => {
-            const resumeInput = document.getElementById('resume');
-            const jdInput = document.getElementById('job_description');
             if (!resumeInput.files[0] || !jdInput.files[0]) {
                 resultsDiv.innerHTML = '<p class="text-red-500 font-semibold">Please upload both files.</p>';
                 return;
             }
-            resultsDiv.innerHTML = '<div class="loader"></div><p class="text-center text-blue-500">Performing analysis...</p>';
-            analyzeBtn.disabled = true;
-            analyzeBtn.classList.add('opacity-50', 'cursor-not-allowed');
+
+            resultsDiv.innerHTML = `<div class="flex items-center gap-2 text-blue-500"><svg class="animate-spin h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Analyzing...</div>`;
             
             const formData = new FormData();
             formData.append('resume', resumeInput.files[0]);
             formData.append('job_description', jdInput.files[0]);
-            
+
             try {
-                const response = await fetch('http://127.0.0.1:5000/analyze', { method: 'POST', body: formData });
-                const data = await response.json();
-                
+                 // CORRECTED: Use relative URL
+                const response = await fetch('/api/analyze', { method: 'POST', body: formData });
                 if (response.ok) {
-                    await fetchHistory(); // Update history in the background
-                    // Now show the new analysis details in the main panel
-                    showDetails(0); // The new item is always at the top of the history
+                    const data = await response.json();
+                    const scoreColor = data.relevance_score > 75 ? 'text-green-500' : data.relevance_score > 50 ? 'text-yellow-500' : 'text-red-500';
+                    const typeColor = data.analysis_type.includes('AI') ? 'text-green-600' : 'text-orange-600';
+
+                    resultsDiv.innerHTML = `
+                        <div class="space-y-3">
+                            <div><strong class="font-semibold text-gray-700">Relevance Score:</strong> <span class="text-2xl font-bold ${scoreColor}">${data.relevance_score}</span></div>
+                            <div><strong class="font-semibold text-gray-700">Verdict:</strong> <span class="font-bold">${data.verdict}</span></div>
+                            <div><strong class="font-semibold text-gray-700">Analysis Type:</strong> <span class="font-semibold ${typeColor}">${data.analysis_type}</span></div>
+                        </div>
+                    `;
+                    fetchHistory();
                 } else {
-                    resultsDiv.innerHTML = `<p class="text-red-500"><b>Error:</b> ${data.error || 'An unknown error occurred.'}</p>`;
+                    resultsDiv.innerHTML = '<p class="text-red-500 font-semibold">Error: An error occurred during analysis.</p>';
                 }
             } catch (error) {
-                console.error('Error:', error);
-                resultsDiv.innerHTML = '<p class="text-red-500"><b>Error:</b> Could not connect to the backend.</p>';
-            } finally {
-                analyzeBtn.disabled = false;
-                analyzeBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                console.error('Analysis error:', error);
+                resultsDiv.innerHTML = '<p class="text-red-500 font-semibold">Error: Could not connect to the backend.</p>';
             }
         });
-        
+
         clearHistoryBtn.addEventListener('click', async () => {
-            if (!confirm('Are you sure you want to clear the entire evaluation history? This action cannot be undone.')) return;
-            try {
-                const response = await fetch('http://127.0.0.1:5000/evaluations/delete', { method: 'POST' });
-                if (response.ok) { 
-                    fetchHistory(); 
-                    resultsDiv.innerHTML = '<p>Analysis results will appear here. Click \'View Details\' on an item in the history to review it.</p>';
-                } else { 
-                    alert('Failed to clear history.'); 
+            if (confirm('Are you sure you want to clear the entire evaluation history?')) {
+                try {
+                     // CORRECTED: Use relative URL
+                    const response = await fetch('/api/evaluations/delete', { method: 'POST' });
+                    if(response.ok) {
+                        fetchHistory();
+                    }
+                } catch(error) {
+                    console.error('Clear history error:', error);
                 }
-            } catch (error) {
-                console.error('Error clearing history:', error);
-                alert('Could not connect to the backend to clear history.');
+            }
+        });
+
+        function showDetails(index) {
+            const item = evaluations[index];
+            if (!item) return;
+
+            const matched = JSON.parse(item.matched_skills);
+            const missing = JSON.parse(item.missing_skills);
+
+            modalBody.innerHTML = `
+                <div class="space-y-4">
+                    <p><strong>Resume:</strong> ${item.resume_filename}</p>
+                    <p><strong>Job Description:</strong> ${item.jd_filename}</p>
+                    <p><strong>Score:</strong> ${item.relevance_score}</p>
+                    <p><strong>Verdict:</strong> ${item.verdict}</p>
+                    <p><strong>Analysis Type:</strong> ${item.analysis_type}</p>
+                    <div>
+                        <h4 class="font-semibold mb-2">Matched Skills (${matched.length}):</h4>
+                        <p class="text-sm">${matched.join(', ') || 'None'}</p>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold mb-2">Missing Skills (${missing.length}):</h4>
+                        <p class="text-sm">${missing.join(', ') || 'None'}</p>
+                    </div>
+                     <div>
+                        <h4 class="font-semibold mb-2">Feedback:</h4>
+                        <p class="text-sm bg-gray-100 p-2 rounded">${item.feedback}</p>
+                    </div>
+                </div>
+            `;
+            modal.style.display = 'block';
+        }
+
+        closeBtn.onclick = () => { modal.style.display = 'none'; };
+        window.onclick = (event) => {
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        };
+        historyTableBody.addEventListener('click', (event) => {
+            if(event.target.classList.contains('view-details-btn')) {
+                const index = event.target.dataset.index;
+                showDetails(index);
             }
         });
 
@@ -215,4 +288,5 @@
     </script>
 </body>
 </html>
+
 
